@@ -68,7 +68,7 @@
       color: var(--azul-principal);
     }
 
-    input, select, textarea {
+    input, select {
       width: 100%;
       padding: 12px;
       border: 1px solid #CBD5E0;
@@ -100,6 +100,11 @@
       background-color: var(--rosa-destaque);
     }
 
+    button:disabled {
+      background-color: #A0AEC0;
+      cursor: not-allowed;
+    }
+
     #mensagem-sucesso {
       display: none;
       background-color: #DEF7EC;
@@ -109,6 +114,12 @@
       text-align: center;
       margin-top: 20px;
       font-weight: bold;
+    }
+
+    .loading-vagas {
+      font-size: 14px;
+      color: #718096;
+      margin-top: 4px;
     }
   </style>
 </head>
@@ -120,7 +131,7 @@
       <img src="WhatsApp Image 2026-10-02 at 15.13.06.jpeg" alt="Mascote Bateria">
     </div>
 
-    <h1>Inscrição Ritimistas - Acadêmicos da Vila</h1>
+    <h1>Inscrição Ritmista - Acadêmicos da Vila</h1>
     <p class="subtitulo">Preencha os dados abaixo para fazer sua inscrição na bateria.</p>
 
     <form id="form-inscricao">
@@ -141,18 +152,10 @@
 
       <div class="form-group">
         <label for="instrumento">Instrumento Pretendido</label>
-        <select id="instrumento" name="instrumento" required>
-          <option value="">Selecione um instrumento...</option>
-          <option value="Surdo 1ª">Surdo 1ª</option>
-          <option value="Surdo 2ª">Surdo 2ª</option>
-          <option value="Surdo 3ª">Surdo 3ª</option>
-          <option value="Caixa">Caixa</option>
-          <option value="Repique">Repique</option>
-          <option value="Tamborim">Tamborim</option>
-          <option value="Chocalho">Chocalho</option>
-          <option value="Timbal">Chocalho</option>
-          <option value="Agogô">Agogô</option>
+        <select id="instrumento" name="instrumento" required disabled>
+          <option value="">Carregando vagas disponíveis...</option>
         </select>
+        <div id="status-carregamento" class="loading-vagas">Consultando disponibilidade de vagas...</div>
       </div>
 
       <div class="form-group">
@@ -164,7 +167,7 @@
         </select>
       </div>
 
-      <button type="submit" id="btn-enviar">Enviar Inscrição</button>
+      <button type="submit" id="btn-enviar" disabled>Enviar Inscrição</button>
     </form>
 
     <div id="mensagem-sucesso">
@@ -173,9 +176,50 @@
   </div>
 
   <script>
-    // COLE SUA URL DO GOOGLE SCRIPT AQUI ENTRE AS ASPAS SIMPLES:
+    // COLE A SUA URL DO GOOGLE APPS SCRIPT AQUI:
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmZwVtuZom8nUzlieyvwxknabJ0giYHYvSbUyL8gdMCOfSzZftCCQii5ix0D124PRiaw/exec';
 
+    // Função para buscar o saldo de vagas na planilha
+    function carregarVagas() {
+      const selectInst = document.getElementById('instrumento');
+      const statusTxt = document.getElementById('status-carregamento');
+      const btnEnviar = document.getElementById('btn-enviar');
+
+      fetch(SCRIPT_URL)
+        .then(response => response.json())
+        .then(vagas => {
+          selectInst.innerHTML = '<option value="">Selecione um instrumento...</option>';
+          let temVaga = false;
+
+          for (const [inst, info] of Object.entries(vagas)) {
+            const option = document.createElement('option');
+            option.value = inst;
+            
+            if (info.disponivel) {
+              option.textContent = `${inst} (${info.restantes} vaga${info.restantes > 1 ? 's' : ''} restante${info.restantes > 1 ? 's' : ''})`;
+              temVaga = true;
+            } else {
+              option.textContent = `${inst} - (Esgotado)`;
+              option.disabled = true;
+            }
+            selectInst.appendChild(option);
+          }
+
+          selectInst.disabled = false;
+          btnEnviar.disabled = false;
+          statusTxt.style.display = 'none';
+        })
+        .catch(err => {
+          console.error(err);
+          statusTxt.innerText = 'Erro ao carregar vagas. Atualize a página.';
+          statusTxt.style.color = 'red';
+        });
+    }
+
+    // Carrega as vagas assim que a página abre
+    window.addEventListener('DOMContentLoaded', carregarVagas);
+
+    // Envio do Formulário
     document.getElementById('form-inscricao').addEventListener('submit', function(e) {
       e.preventDefault();
       
@@ -204,7 +248,9 @@
         document.getElementById('form-inscricao').reset();
         document.getElementById('mensagem-sucesso').style.display = 'block';
         btn.innerText = 'Enviar Inscrição';
-        btn.disabled = false;
+        
+        // Recarrega as vagas atualizadas
+        carregarVagas();
       })
       .catch(error => {
         alert('Ocorreu um erro ao enviar sua inscrição. Tente novamente.');
