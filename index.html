@@ -6,16 +6,18 @@
   <title>Inscrições - Bateria Acadêmicos da Vila</title>
   <style>
     :root {
-      --azul-principal: #1A365D;
-      --rosa-destaque: #D53F8C;
-      --fundo: #F7FAFC;
-      --texto: #2D3748;
+      --azul-principal: #3182CE; /* Azul vibrante para contraste no fundo preto */
+      --rosa-destaque: #D53F8C;  /* Rosa oficial */
+      --fundo: #121212;         /* Fundo preto/grafite */
+      --card-fundo: #1E1E1E;    /* Fundo do formulário */
+      --texto-branco: #FFFFFF;
+      --texto-secundario: #E2E8F0;
     }
-    
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--fundo);
-      color: var(--texto);
+      color: var(--texto-branco);
       margin: 0;
       padding: 20px;
       display: flex;
@@ -23,12 +25,12 @@
     }
 
     .container {
-      background: white;
+      background: var(--card-fundo);
       max-width: 600px;
       width: 100%;
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
       border-top: 6px solid var(--rosa-destaque);
     }
 
@@ -45,7 +47,7 @@
     }
 
     h1 {
-      color: var(--azul-principal);
+      color: var(--rosa-destaque);
       text-align: center;
       margin-bottom: 10px;
       font-size: 24px;
@@ -53,7 +55,7 @@
 
     p.subtitulo {
       text-align: center;
-      color: #718096;
+      color: var(--texto-secundario);
       margin-bottom: 30px;
     }
 
@@ -71,16 +73,32 @@
     input, select {
       width: 100%;
       padding: 12px;
-      border: 1px solid #CBD5E0;
+      border: 1px solid #4A5568;
+      background-color: #2D3748;
+      color: var(--texto-branco);
       border-radius: 6px;
       box-sizing: border-box;
       font-size: 16px;
     }
 
+    input::placeholder {
+      color: #A0AEC0;
+    }
+
     input:focus, select:focus {
       outline: none;
       border-color: var(--rosa-destaque);
-      box-shadow: 0 0 0 3px rgba(213, 63, 140, 0.2);
+      box-shadow: 0 0 0 3px rgba(213, 63, 140, 0.3);
+    }
+
+    /* Animação para o surgimento dos campos do responsável */
+    .campos-responsavel {
+      display: none;
+      background-color: #2B2638;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid var(--rosa-destaque);
+      margin-bottom: 20px;
     }
 
     button {
@@ -101,14 +119,15 @@
     }
 
     button:disabled {
-      background-color: #A0AEC0;
+      background-color: #4A5568;
+      color: #A0AEC0;
       cursor: not-allowed;
     }
 
     #mensagem-sucesso {
       display: none;
-      background-color: #DEF7EC;
-      color: #03543F;
+      background-color: #1C4532;
+      color: #9AE6B4;
       padding: 15px;
       border-radius: 6px;
       text-align: center;
@@ -118,7 +137,7 @@
 
     .loading-vagas {
       font-size: 14px;
-      color: #718096;
+      color: var(--texto-secundario);
       margin-top: 4px;
     }
   </style>
@@ -146,8 +165,21 @@
       </div>
 
       <div class="form-group">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" placeholder="seu@email.com">
+        <label for="idade">Idade</label>
+        <input type="number" id="idade" name="idade" required min="5" max="120" placeholder="Digite sua idade">
+      </div>
+
+      <!-- Campos adicionais para menores de 18 anos -->
+      <div id="box-responsavel" class="campos-responsavel">
+        <div class="form-group">
+          <label for="nome_responsavel">Nome do Responsável</label>
+          <input type="text" id="nome_responsavel" name="nome_responsavel" placeholder="Digite o nome do pai, mãe ou responsável legal">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="tel_responsavel">Telefone do Responsável</label>
+          <input type="tel" id="tel_responsavel" name="tel_responsavel" placeholder="(11) 99999-9999">
+        </div>
       </div>
 
       <div class="form-group">
@@ -176,8 +208,29 @@
   </div>
 
   <script>
-    // COLE A SUA URL DO GOOGLE APPS SCRIPT AQUI:
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxmZwVtuZom8nUzlieyvwxknabJ0giYHYvSbUyL8gdMCOfSzZftCCQii5ix0D124PRiaw/exec';
+
+    // Controle da idade e exibição dos campos de responsável
+    const inputIdade = document.getElementById('idade');
+    const boxResponsavel = document.getElementById('box-responsavel');
+    const inputNomeResp = document.getElementById('nome_responsavel');
+    const inputTelResp = document.getElementById('tel_responsavel');
+
+    inputIdade.addEventListener('input', function() {
+      const idade = parseInt(this.value, 10);
+      
+      if (!isNaN(idade) && idade < 18) {
+        boxResponsavel.style.display = 'block';
+        inputNomeResp.required = true;
+        inputTelResp.required = true;
+      } else {
+        boxResponsavel.style.display = 'none';
+        inputNomeResp.required = false;
+        inputTelResp.required = false;
+        inputNomeResp.value = '';
+        inputTelResp.value = '';
+      }
+    });
 
     // Função para buscar o saldo de vagas na planilha
     function carregarVagas() {
@@ -194,7 +247,7 @@
           for (const [inst, info] of Object.entries(vagas)) {
             const option = document.createElement('option');
             option.value = inst;
-            
+
             if (info.disponivel) {
               option.textContent = `${inst} (${info.restantes} vaga${info.restantes > 1 ? 's' : ''} restante${info.restantes > 1 ? 's' : ''})`;
               temVaga = true;
@@ -212,7 +265,7 @@
         .catch(err => {
           console.error(err);
           statusTxt.innerText = 'Erro ao carregar vagas. Atualize a página.';
-          statusTxt.style.color = 'red';
+          statusTxt.style.color = '#FEB2B2';
         });
     }
 
@@ -222,7 +275,7 @@
     // Envio do Formulário
     document.getElementById('form-inscricao').addEventListener('submit', function(e) {
       e.preventDefault();
-      
+
       const btn = document.getElementById('btn-enviar');
       btn.innerText = 'Enviando...';
       btn.disabled = true;
@@ -230,7 +283,9 @@
       const dados = {
         nome: document.getElementById('nome').value,
         whatsapp: document.getElementById('whatsapp').value,
-        email: document.getElementById('email').value,
+        idade: document.getElementById('idade').value,
+        nome_responsavel: inputNomeResp.value || 'N/A',
+        tel_responsavel: inputTelResp.value || 'N/A',
         instrumento: document.getElementById('instrumento').value,
         experiencia: document.getElementById('experiencia').value,
         data: new Date().toLocaleString('pt-BR')
@@ -246,9 +301,10 @@
       })
       .then(() => {
         document.getElementById('form-inscricao').reset();
+        boxResponsavel.style.display = 'none';
         document.getElementById('mensagem-sucesso').style.display = 'block';
         btn.innerText = 'Enviar Inscrição';
-        
+
         // Recarrega as vagas atualizadas
         carregarVagas();
       })
