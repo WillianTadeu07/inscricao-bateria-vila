@@ -6,10 +6,10 @@
   <title>Inscrições - Bateria Acadêmicos da Vila</title>
   <style>
     :root {
-      --azul-principal: #3182CE; /* Azul vibrante para alto contraste no fundo escuro */
-      --rosa-destaque: #D53F8C;  /* Rosa oficial */
-      --fundo: #121212;         /* Fundo preto/grafite */
-      --card-fundo: #1E1E1E;    /* Fundo do formulário */
+      --azul-principal: #3182CE;
+      --rosa-destaque: #D53F8C;
+      --fundo: #121212;
+      --card-fundo: #1E1E1E;
       --texto-branco: #FFFFFF;
       --texto-secundario: #E2E8F0;
     }
@@ -91,7 +91,6 @@
       box-shadow: 0 0 0 3px rgba(213, 63, 140, 0.3);
     }
 
-    /* Caixa estilizada para dados do responsável de menores de idade */
     .campos-responsavel {
       display: none;
       background-color: #2B2638;
@@ -169,7 +168,6 @@
         <input type="number" id="idade" name="idade" required min="5" max="120" placeholder="Digite sua idade">
       </div>
 
-      <!-- Campos condicionais para menores de 18 anos -->
       <div id="box-responsavel" class="campos-responsavel">
         <div class="form-group">
           <label for="nome_responsavel">Nome do Responsável</label>
@@ -193,7 +191,7 @@
           <option value="Repinique">Repinique</option>
           <option value="Tamborim">Tamborim</option>
           <option value="Agogô">Agogô</option>
-          <option value="Cuíca">Cuíca</option>
+          <option value="Timbal">Timbal</option>
           <option value="Chocalho">Chocalho</option>
         </select>
         <div id="status-carregamento" class="loading-vagas">Atualizando saldo de vagas em tempo real...</div>
@@ -219,7 +217,6 @@
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyb3lLoEjCnrlKiMMVgtPWuvBPUaOW7tExzynXMn2-_94pSysz_vV7nRC-fhMaAfPnX1w/exec';
 
-    // Controle dinâmico para exibição dos campos de responsável quando for menor de idade
     const inputIdade = document.getElementById('idade');
     const boxResponsavel = document.getElementById('box-responsavel');
     const inputNomeResp = document.getElementById('nome_responsavel');
@@ -241,7 +238,6 @@
       }
     });
 
-    // Função para atualizar a quantidade de vagas nos instrumentos em segundo plano
     function carregarVagas() {
       const selectInst = document.getElementById('instrumento');
       const statusTxt = document.getElementById('status-carregamento');
@@ -272,10 +268,8 @@
         });
     }
 
-    // Executa a busca de vagas sem travar o carregamento dos instrumentos
     window.addEventListener('DOMContentLoaded', carregarVagas);
 
-    // Envio do Formulário
     document.getElementById('form-inscricao').addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -309,7 +303,6 @@
         btn.innerText = 'Enviar Inscrição';
         btn.disabled = false;
 
-        // Recarrega as vagas atualizadas
         carregarVagas();
       })
       .catch(error => {
